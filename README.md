@@ -244,7 +244,7 @@ Potential improvements include:
 
 ## License
 
-Copyright 2026 Cogman.
+Copyright 2026 Jan Kolář.
 
 Unless otherwise specified, original code developed for this
 project is licensed under the Apache License, Version 2.0.
