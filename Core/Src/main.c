@@ -19,7 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "usb_device.h"
-
+#include "usbd_customhid.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
@@ -43,7 +43,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -104,11 +103,21 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  uint8_t update;
+  uint8_t txBuffer[USB_QUEUE_ELEM_SIZE];
+
   while (1)
   {
     /* USER CODE END WHILE */
 	/*update button states*/
-	bttnsUpdate();
+	update = bttnsUpdate();
+
+	/*If the button state changed*/
+	if(update){
+
+		USB_Enqueue_Report(bttnsRead(txBuffer));
+	}
+	USB_update();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

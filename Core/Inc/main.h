@@ -32,6 +32,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "buttons.h"
+#include "usb_transport.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

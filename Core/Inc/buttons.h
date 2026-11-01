@@ -1,7 +1,7 @@
 /**
  ******************************************************************************
  * @file    buttons.h
- * @brief   TODO: File description
+ * @brief   Header for Buttons.c
  *
  * Copyright 2026 Jan Kolář
  * SPDX-License-Identifier: Apache-2.0
@@ -43,6 +43,6 @@ uint8_t* bttnsRead(uint8_t readSnapshot[BTTNS_STATE_SIZE]);
  * @param None
  * @retval None
  */
-void bttnsUpdate(void);
+uint8_t bttnsUpdate(void);
 
 #endif /* INC_BUTTONS_H_ */

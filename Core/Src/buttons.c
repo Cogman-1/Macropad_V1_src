@@ -40,7 +40,10 @@ uint8_t* bttnsRead(uint8_t readSnapshot[BTTNS_STATE_SIZE]){
 	return memcpy(readSnapshot, bttnState, BTTNS_STATE_SIZE);
 }
 
-void bttnsUpdate(void){
+uint8_t bttnsUpdate(void){
+	uint8_t lastBttnState[BTTNS_STATE_SIZE];
+	memcpy(lastBttnState, bttnState, BTTNS_STATE_SIZE);
+
 	for(uint8_t i = 0; i < BTTNS_COUNT; i++){
 		uint8_t byte = i / 8U;
 		uint8_t bit = i % 8U;
@@ -54,4 +57,8 @@ void bttnsUpdate(void){
 			bttnState[byte] &= (uint8_t)~mask;
 		}
 	}
+	for(uint8_t i = 0; i < BTTNS_STATE_SIZE; i++){
+		if(bttnState[i] != lastBttnState[i]) return 1U;
+	}
+	return 0;
 }
