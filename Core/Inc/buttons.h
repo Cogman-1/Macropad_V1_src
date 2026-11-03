@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 #include "main.h"
 
 
@@ -41,8 +42,8 @@ uint8_t* bttnsRead(uint8_t readSnapshot[BTTNS_STATE_SIZE]);
 /*
  * @brief Read the current buttons pressed and update the internal bttnState
  * @param None
- * @retval None
+ * @retval true if the input state has changed since the last stable state.
  */
-uint8_t bttnsUpdate(void);
+bool bttnsUpdate(void);
 
 #endif /* INC_BUTTONS_H_ */

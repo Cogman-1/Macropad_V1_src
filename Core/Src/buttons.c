@@ -11,6 +11,7 @@
 /* Includes */
 #include "buttons.h"
 
+#define BTTNS_DEBOUNCE_MS 10U
 
 /* Globals definitions */
 static const Button_t bttns[BTTNS_COUNT] = {
@@ -27,11 +28,33 @@ static const Button_t bttns[BTTNS_COUNT] = {
 
 static uint8_t bttnState[BTTNS_STATE_SIZE];
 
+static uint8_t bttnCandidate[BTTNS_STATE_SIZE];
 
+static uint32_t bttnChangeTime[BTTNS_COUNT];
 
+void bttnsInit(void)
+{
+    memset(bttnState, 0, BTTNS_STATE_SIZE);
+    memset(bttnCandidate, 0, BTTNS_STATE_SIZE);
 
-void bttnsInit(void){
-	for(uint8_t i = 0; i < BTTNS_STATE_SIZE; i++) bttnState[i] = 0U;
+    uint32_t now = HAL_GetTick();
+
+    for (uint8_t i = 0; i < BTTNS_COUNT; i++)
+    {
+        uint8_t byte = i / 8U;
+        uint8_t mask = (uint8_t)(1U << (i % 8U));
+
+        bool pressed = (HAL_GPIO_ReadPin(bttns[i].port,
+                                         bttns[i].pin) == GPIO_PIN_RESET);
+
+        if (pressed)
+        {
+            bttnState[byte] |= mask;
+            bttnCandidate[byte] |= mask;
+        }
+
+        bttnChangeTime[i] = now;
+    }
 }
 
 
@@ -40,25 +63,47 @@ uint8_t* bttnsRead(uint8_t readSnapshot[BTTNS_STATE_SIZE]){
 	return memcpy(readSnapshot, bttnState, BTTNS_STATE_SIZE);
 }
 
-uint8_t bttnsUpdate(void){
-	uint8_t lastBttnState[BTTNS_STATE_SIZE];
-	memcpy(lastBttnState, bttnState, BTTNS_STATE_SIZE);
+bool bttnsUpdate(void)
+{
+    bool changed = false;
+    uint32_t now = HAL_GetTick();
 
-	for(uint8_t i = 0; i < BTTNS_COUNT; i++){
-		uint8_t byte = i / 8U;
-		uint8_t bit = i % 8U;
+    for (uint8_t i = 0; i < BTTNS_COUNT; i++)
+    {
+        uint8_t byte = i / 8U;
+        uint8_t mask = (uint8_t)(1U << (i % 8U));
 
-		uint8_t mask = (uint8_t)(1U << bit);
+        // Read raw GPIO state (active low)
+        bool raw = (HAL_GPIO_ReadPin(bttns[i].port,
+                                    bttns[i].pin) == GPIO_PIN_RESET);
 
-		if(HAL_GPIO_ReadPin(bttns[i].port, bttns[i].pin) == GPIO_PIN_RESET){
-			bttnState[byte] |= mask;
-		}
-		else{
-			bttnState[byte] &= (uint8_t)~mask;
-		}
-	}
-	for(uint8_t i = 0; i < BTTNS_STATE_SIZE; i++){
-		if(bttnState[i] != lastBttnState[i]) return 1U;
-	}
-	return 0;
+        // Get candidate and stable states
+        bool candidate = (bttnCandidate[byte] & mask) != 0U;
+        bool stable = (bttnState[byte] & mask) != 0U;
+
+        // Raw state changed - restart debounce timer
+        if (raw != candidate)
+        {
+            if (raw)
+                bttnCandidate[byte] |= mask;
+            else
+                bttnCandidate[byte] &= (uint8_t)~mask;
+
+            bttnChangeTime[i] = now;
+        }
+
+        // Accept change only after debounce interval
+        if (raw != stable &&
+            (uint32_t)(now - bttnChangeTime[i]) >= BTTNS_DEBOUNCE_MS)
+        {
+            if (raw)
+                bttnState[byte] |= mask;
+            else
+                bttnState[byte] &= (uint8_t)~mask;
+
+            changed = true;
+        }
+    }
+
+    return changed;
 }
