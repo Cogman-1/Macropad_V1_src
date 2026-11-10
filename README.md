@@ -222,9 +222,9 @@ Keyboard actions will instead be handled by the planned host application.
 - [x] STM32CubeIDE project initialization
 - [x] Initial MCU peripheral configuration
 - [x] Initial Custom HID report descriptor
-- [ ] Validate USB HID communication
-- [ ] Implement button scanning
-- [ ] Implement button debouncing
+- [x] Validate USB HID communication
+- [x] Implement button scanning
+- [x] Implement button debouncing
 - [ ] Implement LED control
 - [ ] Implement USB input and output report handling
 - [ ] Define a stable communication protocol
